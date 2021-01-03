@@ -14,6 +14,7 @@ import (
 
 var (
 	api *cloudflare.API
+	raw bool
 )
 
 func init() {
@@ -25,6 +26,7 @@ func init() {
 }
 
 func main() {
+	flag.BoolVar(&raw, "raw", false, "show json")
 	flag.Parse()
 	switch flag.Arg(0) {
 	case "ls":
@@ -94,11 +96,17 @@ func listZones() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	enc := json.NewEncoder(os.Stdout)
-	enc.SetIndent("", "\t")
-	err = enc.Encode(zones)
-	if err != nil {
-		log.Fatal(err)
+	if raw {
+		enc := json.NewEncoder(os.Stdout)
+		enc.SetIndent("", "\t")
+		err = enc.Encode(zones)
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		for _, zone := range zones {
+			fmt.Println(zone.Name)
+		}
 	}
 }
 
@@ -111,11 +119,17 @@ func listZoneRecords(name string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	enc := json.NewEncoder(os.Stdout)
-	enc.SetIndent("", "\t")
-	err = enc.Encode(recs)
-	if err != nil {
-		log.Fatal(err)
+	if raw {
+		enc := json.NewEncoder(os.Stdout)
+		enc.SetIndent("", "\t")
+		err = enc.Encode(recs)
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		for _, rec := range recs {
+			fmt.Printf("%s\t%s\t%s\t%s\n", rec.ID, rec.Type, rec.Content, rec.Name)
+		}
 	}
 }
 
@@ -132,11 +146,13 @@ func createDNSRecord(name, dname, dtype, dvalue string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	enc := json.NewEncoder(os.Stdout)
-	enc.SetIndent("", "\t")
-	err = enc.Encode(resp)
-	if err != nil {
-		log.Fatal(err)
+	if raw {
+		enc := json.NewEncoder(os.Stdout)
+		enc.SetIndent("", "\t")
+		err = enc.Encode(resp)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 }
 
@@ -149,10 +165,12 @@ func deleteDNSRecord(name, recordId string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	enc := json.NewEncoder(os.Stdout)
-	enc.SetIndent("", "\t")
-	err = enc.Encode(true)
-	if err != nil {
-		log.Fatal(err)
+	if raw {
+		enc := json.NewEncoder(os.Stdout)
+		enc.SetIndent("", "\t")
+		err = enc.Encode(true)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 }
